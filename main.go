@@ -134,7 +134,6 @@ func main() {
 	r := mux.NewRouter()
 
 	// Mock Data -- ToDo implement database
-	// books = append(books, Book{ID: "1", ISBN: "A23462", Title: "IDK", Author: &Author{Firstname: "John", Lastname: "Doe"}})
 	// Route handlers / endpoints
 
 	r.HandleFunc("/api/books", getBooks).Methods("GET")
