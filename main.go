@@ -1,13 +1,23 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
+)
+
+const (
+	host   = "localhost"
+	port   = 5432
+	user   = "Riaz"
+	dbname = "testdb"
 )
 
 // Book Struct (Model)
@@ -30,7 +40,37 @@ var books []Book
 // Get all books
 func getBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
+		host, port, user, dbname)
+	db, err := sql.Open("postgres", psqlInfo)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	fmt.Println("Successfully connected!")
+	rows, err := db.Query(`SELECT id, isbn, title FROM book`)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		book := Book{}
+		err = rows.Scan(&book.ID, &book.ISBN, &book.Title)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(book)
+		books = append(books, book)
+	}
+	err = rows.Err()
+	if err != nil {
+		panic(err)
+	}
 	json.NewEncoder(w).Encode(books)
+	books = nil
 }
 
 // Get one books
@@ -94,7 +134,7 @@ func main() {
 	r := mux.NewRouter()
 
 	// Mock Data -- ToDo implement database
-	books = append(books, Book{ID: "1", ISBN: "A23462", Title: "IDK", Author: &Author{Firstname: "John", Lastname: "Doe"}})
+	// books = append(books, Book{ID: "1", ISBN: "A23462", Title: "IDK", Author: &Author{Firstname: "John", Lastname: "Doe"}})
 	// Route handlers / endpoints
 
 	r.HandleFunc("/api/books", getBooks).Methods("GET")
