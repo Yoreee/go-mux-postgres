@@ -73,7 +73,7 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	books = nil
 }
 
-// Get one books
+// Get one book
 func getBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
@@ -133,7 +133,6 @@ func main() {
 	// Init mux
 	r := mux.NewRouter()
 
-	// Mock Data -- ToDo implement database
 	// Route handlers / endpoints
 
 	r.HandleFunc("/api/books", getBooks).Methods("GET")
