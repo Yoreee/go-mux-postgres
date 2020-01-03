@@ -69,7 +69,7 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	json.NewEncoder(w).Encode(books)
+	json.NewEncoder(w).Encode(&books)
 	books = nil
 }
 
@@ -77,14 +77,34 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 func getBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
-	// Loop through books and find ID
-	for _, item := range books {
-		if item.ID == params["id"] {
-			json.NewEncoder(w).Encode(item)
-			return
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
+		host, port, user, dbname)
+	db, err := sql.Open("postgres", psqlInfo)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+	fmt.Println("Successfully connected!")
+
+	// pull 1 item
+	id := params["id"]
+	book := Book{}
+	sqlStatement := `SELECT id, isbn, title FROM book WHERE id=$1`
+	row := db.QueryRow(sqlStatement, id)
+	errr := row.Scan(&book.ID, &book.ISBN, &book.Title)
+	if errr != nil {
+		if errr == sql.ErrNoRows {
+			fmt.Println("Zero rows found")
+		} else {
+			panic(err)
 		}
 	}
-	json.NewEncoder(w).Encode(&Book{})
+	fmt.Println(book)
+	json.NewEncoder(w).Encode(&book)
+
 }
 
 // Add new book
