@@ -26,9 +26,6 @@ type Book struct {
 	// Author *Author `json:"author"`
 }
 
-// Init books var as a slice Book struct
-var books []Book
-
 var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbname)
 
 // Get all books
@@ -47,6 +44,8 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	defer rows.Close()
+	var books []Book
+
 	for rows.Next() {
 		book := Book{}
 		err = rows.Scan(&book.ID, &book.ISBN, &book.Title)
@@ -84,6 +83,8 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	if errr != nil {
 		if errr == sql.ErrNoRows {
 			fmt.Println("Zero rows found")
+			json.NewEncoder(w).Encode("{}")
+			return
 		} else {
 			panic(err)
 		}
@@ -122,25 +123,29 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 // Update a book
 func updateBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
+	var bookChanges Book
+	_ = json.NewDecoder(r.Body).Decode(&bookChanges)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
-	// params := mux.Vars(r)
-	// for index, item := range books {
-	// 	if item.ID == params["id"] {
-	// 		books = append(books[:index], books[index+1:]...)
-	// 		var book Book
-	// 		_ = json.NewDecoder(r.Body).Decode(&book)
-	// 		book.ID = params["id"]
-	// 		books = append(books, book)
-	// 		json.NewEncoder(w).Encode(book)
-	// 		return
-	// 	}
-	// }
+	params := mux.Vars(r)
+	id := params["id"]
+	isbn := bookChanges.ISBN
+	title := bookChanges.Title
+
+	book := Book{}
+	selectSQLStatement := `select id, isbn, title from book where id = $1`
+	row := db.QueryRow(selectSQLStatement, id)
+
+	err = row.Scan(&book.ID, &book.ISBN, &book.Title)
+
+	insertSQLStatement := `UPDATE book SET isbn = $1, title = $2 WHERE id = $3;`
+	db.Exec(insertSQLStatement, isbn, title, id)
+
+	json.NewEncoder(w).Encode(&book)
 
 }
 
@@ -152,6 +157,7 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+
 	defer db.Close()
 
 	params := mux.Vars(r)
