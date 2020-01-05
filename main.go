@@ -42,7 +42,6 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	fmt.Println("Successfully connected!")
 	rows, err := db.Query(`SELECT id, isbn, title FROM book`)
 	if err != nil {
 		panic(err)
@@ -77,7 +76,6 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
-	fmt.Println("Successfully connected!")
 
 	id := params["id"]
 	book := Book{}
