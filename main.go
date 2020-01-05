@@ -87,7 +87,6 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	fmt.Println("Successfully connected!")
 
-	// pull 1 item
 	id := params["id"]
 	book := Book{}
 	sqlStatement := `SELECT id, isbn, title FROM book WHERE id=$1`
@@ -110,7 +109,6 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var book Book
 	_ = json.NewDecoder(r.Body).Decode(&book)
-	// params := mux.Vars(r)
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
 		host, port, user, dbname)
@@ -133,9 +131,9 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	book.ID = id
-	fmt.Println(&book)
 	json.NewEncoder(w).Encode(&book)
-	fmt.Println(err)
+
+	fmt.Println(&book)
 	fmt.Println("New ID is:", id)
 }
 
