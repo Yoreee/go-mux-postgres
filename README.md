@@ -16,3 +16,4 @@ TODO:
 - Separate database connection into its own functions
 - Write test cases
 - Add authentication
+- Figure out one to many

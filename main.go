@@ -23,7 +23,6 @@ type Book struct {
 	ID    int    `json:"id"`
 	ISBN  string `json:"isbn"`
 	Title string `json:"title"`
-	// Author *Author `json:"author"`
 }
 
 var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbname)
