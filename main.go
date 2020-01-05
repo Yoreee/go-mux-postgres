@@ -20,7 +20,7 @@ const (
 
 // Book Struct (Model)
 type Book struct {
-	ID     string  `json:"id"`
+	ID     int     `json:"id"`
 	ISBN   string  `json:"isbn"`
 	Title  string  `json:"title"`
 	Author *Author `json:"author"`
@@ -110,40 +110,63 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var book Book
 	_ = json.NewDecoder(r.Body).Decode(&book)
+	// params := mux.Vars(r)
 
-	// book.ID = strconv.Itoa(rand.Intn(100000)) // Not safe
-	// books = append(books, book)
-	json.NewEncoder(w).Encode(book)
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
+		host, port, user, dbname)
+	db, err := sql.Open("postgres", psqlInfo)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+	fmt.Println("Successfully connected!")
+
+	isbn := &book.ISBN
+	title := &book.Title
+	id := 0
+	sqlStatement := `insert into book (isbn, title) values ($1, $2) returning id`
+	err = db.QueryRow(sqlStatement, isbn, title).Scan(&id)
+
+	if err != nil {
+		panic(err)
+	}
+	book.ID = id
+	fmt.Println(&book)
+	json.NewEncoder(w).Encode(&book)
+	fmt.Println(err)
+	fmt.Println("New ID is:", id)
 }
 
 // Update a book
 func updateBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	for index, item := range books {
-		if item.ID == params["id"] {
-			books = append(books[:index], books[index+1:]...)
-			var book Book
-			_ = json.NewDecoder(r.Body).Decode(&book)
-			book.ID = params["id"]
-			books = append(books, book)
-			json.NewEncoder(w).Encode(book)
-			return
-		}
-	}
+	// params := mux.Vars(r)
+	// for index, item := range books {
+	// 	if item.ID == params["id"] {
+	// 		books = append(books[:index], books[index+1:]...)
+	// 		var book Book
+	// 		_ = json.NewDecoder(r.Body).Decode(&book)
+	// 		book.ID = params["id"]
+	// 		books = append(books, book)
+	// 		json.NewEncoder(w).Encode(book)
+	// 		return
+	// 	}
+	// }
 
 }
 
 // Delete a book
 func deleteBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	for index, item := range books {
-		if item.ID == params["id"] {
-			books = append(books[:index], books[index+1:]...)
-			break
-		}
-	}
+	// params := mux.Vars(r)
+	// for index, item := range books {
+	// 	if item.ID == params["id"] {
+	// 		books = append(books[:index], books[index+1:]...)
+	// 		break
+	// 	}
+	// }
 	json.NewEncoder(w).Encode(books)
 }
 
