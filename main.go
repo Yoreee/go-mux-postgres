@@ -35,11 +35,11 @@ type Author struct {
 // Init books var as a slice Book struct
 var books []Book
 
+var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbname)
+
 // Get all books
 func getBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
-		host, port, user, dbname)
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
@@ -76,8 +76,6 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
-		host, port, user, dbname)
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
@@ -110,8 +108,6 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	var book Book
 	_ = json.NewDecoder(r.Body).Decode(&book)
 
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
-		host, port, user, dbname)
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
@@ -140,6 +136,13 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 // Update a book
 func updateBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
 	// params := mux.Vars(r)
 	// for index, item := range books {
 	// 	if item.ID == params["id"] {
@@ -158,14 +161,17 @@ func updateBook(w http.ResponseWriter, r *http.Request) {
 // Delete a book
 func deleteBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	// params := mux.Vars(r)
-	// for index, item := range books {
-	// 	if item.ID == params["id"] {
-	// 		books = append(books[:index], books[index+1:]...)
-	// 		break
-	// 	}
-	// }
-	json.NewEncoder(w).Encode(books)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	params := mux.Vars(r)
+	id := params["id"]
+	sqlStatement := `delete from book where id = $1`
+	db.Exec(sqlStatement, id)
 }
 
 func main() {
