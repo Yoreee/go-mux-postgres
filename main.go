@@ -20,16 +20,10 @@ const (
 
 // Book Struct (Model)
 type Book struct {
-	ID     int     `json:"id"`
-	ISBN   string  `json:"isbn"`
-	Title  string  `json:"title"`
-	Author *Author `json:"author"`
-}
-
-// Author Struct
-type Author struct {
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
+	ID    int    `json:"id"`
+	ISBN  string `json:"isbn"`
+	Title string `json:"title"`
+	// Author *Author `json:"author"`
 }
 
 // Init books var as a slice Book struct
