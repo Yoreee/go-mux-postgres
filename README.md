@@ -1,7 +1,5 @@
 # go-mux-postgres
 
-### -- In progress --
-
 minimalist rest endpoints using go, mux, and postgres
 
 1. make sure go is installed: `go version`
