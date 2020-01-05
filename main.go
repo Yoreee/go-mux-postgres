@@ -53,7 +53,6 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(book)
 		books = append(books, book)
 	}
 	err = rows.Err()
@@ -89,9 +88,8 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 	}
-	fmt.Println(book)
-	json.NewEncoder(w).Encode(&book)
 
+	json.NewEncoder(w).Encode(&book)
 }
 
 // Add new book
@@ -107,7 +105,6 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
-	fmt.Println("Successfully connected!")
 
 	isbn := &book.ISBN
 	title := &book.Title
@@ -120,9 +117,6 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	}
 	book.ID = id
 	json.NewEncoder(w).Encode(&book)
-
-	fmt.Println(&book)
-	fmt.Println("New ID is:", id)
 }
 
 // Update a book
