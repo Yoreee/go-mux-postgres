@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 const (
@@ -177,6 +178,17 @@ func main() {
 	r.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
 	r.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
 
-	log.Fatal(http.ListenAndServe(":8000", r))
+	//======================================================================
+
+	// mux := http.NewServeMux()
+	// mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	w.Write([]byte("{\"hello\": \"world\"}"))
+	// })
+
+	// mux.HandleFunc("/api/books", getBooks).Get()
+
+	handler := cors.Default().Handler(r)
+	log.Fatal(http.ListenAndServe(":8000", handler))
 
 }
